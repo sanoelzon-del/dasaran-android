@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pilih Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Tata letak: cangkang membulat berisi sidebar gradasi (kiri) dan area kartu putih (kanan).
+   Beranda = kartu ringkasan + kartu tiap data. Halaman data = daftar isi/kurangi (kiri) + statistik (kanan). */
+:root {
+  --page: #dde3f2;
+  --shell: #ffffff;
+  --bg: #f7f8fd;
+  --card: #ffffff;
+  --fg: #1b1740;
+  --muted: #7a7aa0;
+  --line: #e8e9f4;
+  --track: #ecebf8;
+  --v: #5b2de0;
+  --m: #e83fc0;
+  --c: #27cfe6;
+  --accent: #5b2de0;
+  --accent-soft: #efeafd;
+  --danger: #d63a4f;
+  --ok: #1fa463;
+  --warn: #c17a10;
+  --grad: linear-gradient(120deg, #5b2de0 0%, #b23fdc 60%, #ee52b8 100%);
+  --shadow: 0 10px 30px rgba(70, 50, 160, .10);
+  --font: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0b0a16; --shell: #12112a; --bg: #151431; --card: #1c1b3b; --fg: #eceaff; --muted: #9d9bc8;
+    --line: #2b2a54; --track: #2c2a57; --accent: #a58bff; --accent-soft: #2a2552;
+    --danger: #ff8b9a; --ok: #5fd99b; --warn: #f0b45a; --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0b0a16; --shell: #12112a; --bg: #151431; --card: #1c1b3b; --fg: #eceaff; --muted: #9d9bc8;
+  --line: #2b2a54; --track: #2c2a57; --accent: #a58bff; --accent-soft: #2a2552;
+  --danger: #ff8b9a; --ok: #5fd99b; --warn: #f0b45a; --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--fg); font: 14px/1.5 var(--font); padding: 24px; }
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Cangkang */
+.shell { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 268px minmax(0, 1fr);
+  background: var(--shell); border-radius: 28px; overflow: hidden; min-height: calc(100vh - 48px);
+  box-shadow: 0 24px 60px rgba(60, 50, 150, .18); }
+
+/* Sidebar */
+.side { background: linear-gradient(165deg, #4f26d8 0%, #8d3fe6 32%, #ee52c2 68%, #8aa4f6 100%); color: #fff;
+  padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+.glass { background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .28); border-radius: 16px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 46px; height: 46px; border-radius: 14px; background: #fff; display: grid; place-items: center; flex: none;
+  box-shadow: 0 6px 16px rgba(30, 10, 100, .25); }
+.brand b { display: block; font-size: 19px; font-weight: 800; line-height: 1.1; }
+.brand span { font-size: 12.5px; opacity: .8; }
+.gauge { position: relative; padding: 18px 16px 14px; text-align: center; }
+.gauge svg { width: 100%; max-width: 190px; display: block; margin: 0 auto; }
+.gauge .gnum { position: absolute; left: 0; right: 0; top: 56px; font-size: 26px; font-weight: 800; line-height: 1; }
+.gauge .glbl { position: absolute; left: 0; right: 0; top: 40px; font-size: 11.5px; opacity: .8; }
+.gauge .gsub { font-size: 12px; opacity: .85; margin-top: 4px; }
+.nav { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; color: #fff; text-decoration: none;
+  font-weight: 600; background: rgba(255, 255, 255, .10); border: 1px solid rgba(255, 255, 255, .18); }
+.nav a:hover { background: rgba(255, 255, 255, .22); }
+.nav a[aria-current="page"] { background: rgba(255, 255, 255, .34); border-color: rgba(255, 255, 255, .5); }
+.nav a[aria-current="page"]::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; margin-left: auto; }
+.nav svg { flex: none; }
+.side-foot { display: flex; flex-direction: column; gap: 10px; }
+.swrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; color: #fff; font-weight: 600;
+  cursor: pointer; width: 100%; font: inherit; font-weight: 600; }
+.sw { width: 40px; height: 22px; border-radius: 99px; background: rgba(255, 255, 255, .32); position: relative; flex: none; transition: background .15s; }
+.sw b { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+[aria-checked="true"] .sw { background: #27cfe6; }
+[aria-checked="true"] .sw b { left: 21px; }
+.conn { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.conn .ct { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; }
+.conn i, .pill i { width: 9px; height: 9px; border-radius: 50%; background: #ffc65a; display: block; flex: none; }
+.conn.live i, .pill.live i { background: #4be08f; }
+.conn small { opacity: .85; font-size: 12px; line-height: 1.4; }
+.conn button { background: #fff; color: #4f26d8; border: 0; font-weight: 700; }
+.conn button:hover:not(:disabled) { background: #f3eefe; }
+
+/* Area utama */
+.main { background: var(--bg); padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+h1 { font-size: 28px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; text-wrap: balance; }
+.sub { color: var(--muted); margin-top: 4px; }
+.back { display: inline-block; margin-bottom: 6px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 13px; }
+.back:hover { color: var(--accent); }
+.top-r { display: none; align-items: center; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); font-size: 12.5px; font-weight: 600; cursor: pointer; color: var(--fg); }
+.iconbtn { width: 36px; height: 36px; padding: 0; border-radius: 50%; display: grid; place-items: center; }
+
+/* Kontrol dasar */
+input { font: inherit; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; width: 100%; min-width: 0; }
+input:disabled { background: var(--track); color: var(--muted); }
+button { font: inherit; font-weight: 600; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+  color: var(--fg); padding: 10px 16px; cursor: pointer; }
+button:hover:not(:disabled) { background: var(--accent-soft); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.primary { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 6px 16px rgba(160, 60, 210, .28); }
+button.primary:hover:not(:disabled) { background: var(--grad); filter: brightness(1.07); }
+button.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+button.danger:hover:not(:disabled) { background: var(--danger); filter: brightness(1.07); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.sbox { position: relative; flex: 1 1 220px; min-width: 0; }
+.sbox svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.sbox input { padding-left: 38px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; padding: 4px; gap: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); align-self: flex-start; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; border-radius: 10px; }
+.seg button[aria-pressed="true"], .seg button[aria-pressed="true"]:hover:not(:disabled) { background: var(--grad); color: #fff; }
+
+/* Kartu gradasi */
+.hero { position: relative; overflow: hidden; border-radius: 22px; color: #fff; padding: 22px 24px;
+  background: linear-gradient(120deg, #ff7fbf 0%, #b266f2 40%, #6a4bf0 72%, #37d3ee 100%);
+  box-shadow: 0 18px 36px rgba(140, 70, 220, .28); }
+.hero::before { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%; right: -60px; top: -80px; background: rgba(255, 255, 255, .22); filter: blur(6px); }
+.hero::after { content: ""; position: absolute; width: 160px; height: 160px; border-radius: 50%; left: 30%; bottom: -90px; background: rgba(255, 255, 255, .16); }
+.hero > * { position: relative; z-index: 1; }
+.hero span { font-size: 13px; font-weight: 600; opacity: .92; }
+.hero b { display: block; font-size: 38px; font-weight: 800; line-height: 1.1; margin: 4px 0 6px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.hero small { font-size: 13px; opacity: .9; }
+.hero.sm b { font-size: 32px; }
+
+/* Beranda */
+.homegrid { display: flex; flex-direction: column; gap: 22px; }
+.setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.setcard { display: flex; flex-direction: column; gap: 16px; padding: 20px; text-decoration: none; color: var(--fg);
+  background: var(--card); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); min-width: 0; }
+.setcard:hover { transform: translateY(-2px); border-color: var(--ac); }
+.sc-top { display: flex; align-items: center; gap: 12px; }
+.sc-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: none; background: var(--ac); }
+.sc-top b { display: block; font-size: 17px; font-weight: 800; line-height: 1.2; }
+.sc-top small { color: var(--muted); font-size: 12.5px; }
+.sc-mid { display: flex; align-items: center; gap: 16px; }
+.donutwrap { position: relative; width: 92px; height: 92px; flex: none; }
+.donutwrap svg { width: 100%; height: 100%; display: block; }
+.donutwrap em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 17px; }
+.sc-num span { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
+.sc-num b { font-size: 30px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sc-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; background: var(--ac-soft); color: var(--ac); }
+.open { margin-left: auto; font-weight: 700; color: var(--ac); }
+.acc0 { --ac: #e83fc0; --ac-soft: #fde8f7; }
+.acc1 { --ac: #4a2bd6; --ac-soft: #ebe7fc; }
+.acc2 { --ac: #11b4cf; --ac-soft: #dff6fa; }
+:root[data-theme="dark"] .acc0 { --ac-soft: #3a2046; } :root[data-theme="dark"] .acc1 { --ac: #a58bff; --ac-soft: #2a2552; } :root[data-theme="dark"] .acc2 { --ac-soft: #17394a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .acc0 { --ac-soft: #3a2046; } :root:not([data-theme="light"]) .acc1 { --ac: #a58bff; --ac-soft: #2a2552; } :root:not([data-theme="light"]) .acc2 { --ac-soft: #17394a; }
+}
+
+/* Halaman data */
+.setlayout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+.colmain { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.colstats { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { background: var(--bg); font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+th .th { display: flex; align-items: center; gap: 6px; }
+th .x { border: 0; background: transparent; color: var(--muted); padding: 0 4px; font-size: 15px; line-height: 1; opacity: 0; border-radius: 6px; }
+th:hover .x, th .x:focus-visible { opacity: 1; }
+th .x:hover:not(:disabled) { color: var(--danger); background: transparent; }
+tbody tr:hover { background: var(--accent-soft); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; }
+td.act { text-align: right; width: 1%; }
+td.act button { padding: 5px 11px; font-size: 13px; border-radius: 9px; }
+td.act button + button { margin-left: 4px; }
+.empty { color: var(--muted); }
+.chips { display: inline-flex; gap: 3px; margin-right: 10px; vertical-align: middle; }
+.chips span { width: 15px; height: 15px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); display: block; }
+.state { padding: 38px 16px; text-align: center; color: var(--muted); }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12.5px; }
+
+.qitem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line); }
+.qitem:last-child { border-bottom: 0; }
+.qname { font-weight: 700; font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
+.qval { text-align: right; line-height: 1.1; }
+.qval span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.qval b { font-size: 27px; font-weight: 800; font-variant-numeric: tabular-nums; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.qval b.zero { background: none; -webkit-text-fill-color: var(--muted); color: var(--muted); }
+.qctl { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.qctl input { width: 92px; flex: 0 0 auto; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
+@media (min-width: 640px) {
+  .qitem { grid-template-columns: minmax(0, 1fr) 90px auto; }
+  .qctl { grid-column: auto; flex-wrap: nowrap; }
+}
+
+/* Panel statistik */
+.panel { padding: 20px; }
+.panel h3 { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+.dn { display: flex; align-items: center; gap: 16px; }
+.dn .donutwrap { width: 104px; height: 104px; }
+.legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.legend b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+.brow { margin-bottom: 14px; }
+.brow:last-child { margin-bottom: 0; }
+.bl { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+.bl span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.bl span:last-child { font-variant-numeric: tabular-nums; font-weight: 800; }
+.bt { height: 12px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.bt i { display: block; height: 100%; border-radius: 99px; }
+.c0 { background: linear-gradient(90deg, #f46fc9, #e83fc0); }
+.c1 { background: linear-gradient(90deg, #7a5df2, #4a2bd6); }
+.c2 { background: linear-gradient(90deg, #5be3f2, #11b4cf); }
+.note { color: var(--muted); font-size: 13px; }
+
+/* Dialog */
+dialog { border: 1px solid var(--line); border-radius: 20px; background: var(--card); color: var(--fg); padding: 22px; width: min(440px, calc(100vw - 32px)); box-shadow: 0 30px 70px rgba(30, 10, 100, .35); }
+dialog::backdrop { background: rgba(14, 10, 40, .6); }
+dialog h2 { font-size: 19px; font-weight: 800; margin-bottom: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.field small { color: var(--muted); font-size: 12px; }
+.row-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.err { color: var(--danger); font-size: 13px; margin: 0 0 8px; }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  background: #241e55; color: #fff; padding: 11px 18px; border-radius: 12px; font-weight: 600; z-index: 50; max-width: calc(100vw - 32px); text-align: center;
+  box-shadow: 0 12px 30px rgba(20, 10, 80, .35); }
+#toast.bad { background: var(--danger); color: #fff; }
+
+/* Layar sempit */
+@media (max-width: 1100px) { .setlayout { grid-template-columns: minmax(0, 1fr); } .colstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+@media (max-width: 960px) {
+  body { padding: 12px; }
+  .shell { grid-template-columns: minmax(0, 1fr); border-radius: 22px; min-height: 0; }
+  .side { flex-direction: row; flex-wrap: wrap; align-items: center; padding: 16px; gap: 12px; }
+  .gauge, .side-foot { display: none; }
+  .nav { flex-direction: row; overflow-x: auto; flex: 1 1 100%; order: 3; padding-bottom: 2px; }
+  .nav a { white-space: nowrap; padding: 9px 14px; }
+  .nav a[aria-current="page"]::after { display: none; }
+  .top-r { display: flex; }
+  .main { padding: 20px 16px 32px; }
+}
+@media (max-width: 520px) { h1 { font-size: 23px; } th, td { padding: 10px 11px; } .hero b { font-size: 32px; } }
+@media (prefers-reduced-motion: no-preference) { .setcard { transition: transform .15s, border-color .15s; } tbody tr { transition: background .12s; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gPink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f68ad6"/><stop offset="1" stop-color="#e83fc0"/></linearGradient>
+    <linearGradient id="gViolet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5df2"/><stop offset="1" stop-color="#4a2bd6"/></linearGradient>
+    <linearGradient id="gCyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5be3f2"/><stop offset="1" stop-color="#11b4cf"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="11" cy="15" r="8" fill="#e83fc0" fill-opacity=".92"/><circle cx="19" cy="15" r="8" fill="#4a2bd6" fill-opacity=".85"/></svg>
+      </div>
+      <div><b>Dasaran</b><span>Data pasangan warna</span></div>
+    </div>
+
+    <div class="gauge glass" id="gauge">
+      <svg viewBox="0 0 120 66" aria-hidden="true">
+        <path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="11" stroke-linecap="round"/>
+        <path id="gaugeArc" d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-dasharray="0 157.08"/>
+      </svg>
+      <div class="glbl">Total jumlah</div>
+      <div class="gnum" id="gaugeNum">0</div>
+      <div class="gsub" id="gaugeSub">&nbsp;</div>
+    </div>
+
+    <nav class="nav" id="nav" aria-label="Daftar data"></nav>
+
+    <div class="side-foot">
+      <button type="button" class="swrow glass" id="themeBtn" role="switch" aria-checked="false"><span>Mode gelap</span><i class="sw"><b></b></i></button>
+      <div class="conn glass" id="conn">
+        <div class="ct"><i></i><span class="stx">Mode contoh</span></div>
+        <small class="ctx">Data contoh hanya tersimpan di browser ini.</small>
+        <button type="button" data-cfg>Atur koneksi</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <div>
+        <a class="back" id="back" href="#" hidden>← Semua data</a>
+        <h1 id="pageTitle">Pilih Data</h1>
+        <p class="sub" id="pageSub">Klik salah satu data untuk membukanya.</p>
+      </div>
+      <div class="top-r">
+        <button type="button" class="pill" data-cfg title="Atur koneksi Google Sheets"><i></i><span class="stx">Mode contoh</span></button>
+        <button type="button" class="iconbtn" id="themeTop" aria-label="Ganti tema terang atau gelap">◐</button>
+      </div>
+    </header>
+
+    <!-- Halaman 1: beranda -->
+    <section id="homeView"><div id="homeBox"><div class="state">Memuat daftar data…</div></div></section>
+
+    <!-- Halaman 2: satu data -->
+    <section id="setView" hidden>
+      <div class="setlayout">
+        <div class="colmain">
+          <div class="seg" role="group" aria-label="Mode">
+            <button type="button" id="tabQuick" aria-pressed="true">Isi / kurangi jumlah</button>
+            <button type="button" id="tabManage" aria-pressed="false">Kelola tabel</button>
+          </div>
+          <div class="bar">
+            <div class="sbox">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="q" type="search" placeholder="Cari warna dasaran, contoh: merah - putih" aria-label="Cari data">
+            </div>
+            <button type="button" id="addRow" class="primary" hidden>+ Tambah baris</button>
+            <button type="button" id="addCol" hidden>+ Tambah kolom</button>
+            <button type="button" id="reload">Muat ulang</button>
+          </div>
+          <div class="card">
+            <div id="quickBox"></div>
+            <div class="scroll" id="tableBox" hidden></div>
+          </div>
+          <div class="foot"><span id="count"></span><span id="total"></span></div>
+        </div>
+        <aside class="colstats" id="stats" aria-label="Ringkasan"></aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="rowDlg">
+  <form id="rowForm" method="dialog">
+    <h2 id="rowTitle">Tambah baris</h2>
+    <div id="rowFields"></div>
+    <p class="err" id="rowErr" role="alert"></p>
+    <div class="row-btns">
+      <button type="button" data-close>Batal</button>
+      <button type="submit" class="primary" id="rowSave">Simpan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="colDlg">
+  <form id="colForm" method="dialog">
+    <h2>Tambah kolom</h2>
+    <div class="field">
+      <label for="colName">Nama kolom</label>
+      <input id="colName" autocomplete="off" placeholder="Contoh: KETERANGAN">
+      <small>Kolom baru ikut ditambahkan ke Google Sheets di sebelah kanan kolom terakhir.</small>
+    </div>
+    <p class="err" id="colErr" role="alert"></p>
+    <div class="row-btns">
+      <button type="button" data-close>Batal</button>
+      <button type="submit" class="primary" id="colSave">Tambah</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delDlg">
+  <h2 id="delTitle">Hapus?</h2>
+  <p id="delText" style="color:var(--muted)"></p>
+  <div class="row-btns">
+    <button type="button" data-close>Batal</button>
+    <button type="button" class="danger" id="delOk">Hapus</button>
+  </div>
+</dialog>
+
+<dialog id="cfgDlg">
+  <form id="cfgForm" method="dialog">
+    <h2>Koneksi Google Sheets</h2>
+    <div class="field">
+      <label for="cfgUrl">URL Web App (Apps Script)</label>
+      <input id="cfgUrl" autocomplete="off" placeholder="https://script.google.com/macros/s/.../exec">
+      <small>Kosongkan untuk memakai mode contoh. Data contoh hanya tersimpan di browser ini.</small>
+    </div>
+    <div class="field">
+      <label for="cfgToken">Token (opsional)</label>
+      <input id="cfgToken" autocomplete="off" placeholder="Sama dengan TOKEN di Code.gs">
+    </div>
+    <div class="row-btns">
+      <button type="button" data-close>Batal</button>
+      <button type="submit" class="primary">Simpan</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var KEY_CFG = 'dasaran_cfg', KEY_DEMO = 'dasaran_demo_', KEY_THEME = 'dasaran_theme';
+  var ARC = 157.08;
+  var COLORS = { MERAH: '#c62f2a', PUTIH: '#f6f5f1', HITAM: '#1c1b1a', KUNING: '#efc01a', BIRU: '#1f5db5',
+    HIJAU: '#2b8a4b', ORANYE: '#ef7d1a', UNGU: '#7b3fa0', COKLAT: '#7a4a2b', ABU: '#8d9096', PINK: '#ee87b0' };
+  var SAMPLE = ['MERAH - PUTIH', 'PUTIH - MERAH', 'MERAH - HITAM', 'HITAM - MERAH', 'MERAH - KUNING', 'KUNING - MERAH',
+    'BIRU - PUTIH', 'PUTIH - BIRU', 'BIRU - HITAM', 'HITAM - BIRU', 'BIRU - KUNING', 'KUNING - BIRU',
+    'HIJAU - PUTIH', 'PUTIH - HIJAU', 'HIJAU - HITAM', 'HITAM - HIJAU', 'HIJAU - KUNING', 'KUNING - HIJAU'];
+  var GRADS = ['gPink', 'gViolet', 'gCyan'];
+
+  var cfg = readCfg();
+  var sets = [];
+  var sums = {};                  // ringkasan tiap data untuk beranda
+  var cur = null;
+  var data = { headers: [], rows: [] };
+  var query = '';
+  var mode = 'quick';
+  var busy = false;
+  var editing = null;
+  var pendingDel = null;
+  var toastTimer = null;
+
+  function readCfg() {
+    try { return Object.assign({ url: '', token: '' }, JSON.parse(localStorage.getItem(KEY_CFG) || '{}')); }
+    catch (e) { return { url: '', token: '' }; }
+  }
+  function saveCfg() { try { localStorage.setItem(KEY_CFG, JSON.stringify(cfg)); } catch (e) {} }
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmt(n) { return Number(n).toLocaleString('id-ID'); }
+  function isNumCol(h) { var u = String(h).toUpperCase(); return u === 'NO' || u === 'JUMLAH'; }
+  function isColorCol(h) { return /WARNA/i.test(h); }
+  function idxOfQty(h) { return h.map(function (x) { return String(x).toUpperCase(); }).indexOf('JUMLAH'); }
+  function qtyIdx() { return idxOfQty(data.headers); }
+  function nameIdx() {
+    for (var i = 0; i < data.headers.length; i++) if (/WARNA|NAMA/i.test(data.headers[i])) return i;
+    for (var j = 0; j < data.headers.length; j++) if (String(data.headers[j]).toUpperCase() !== 'NO') return j;
+    return 0;
+  }
+  function findRow(n) { return data.rows.filter(function (r) { return r.row === n; })[0]; }
+
+  function toast(msg, bad) {
+    var t = $('#toast');
+    t.textContent = msg; t.className = bad ? 'bad' : ''; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, bad ? 5000 : 2400);
+  }
+
+  /* ---------- Ikon dan grafik kecil ---------- */
+  var ICO_HOME = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
+  var ICO_GRID = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>';
+  function donut(p, grad) {
+    p = Math.max(0, Math.min(100, p));
+    return '<svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--track)" stroke-width="4"/>' +
+      (p > 0 ? '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="url(#' + grad + ')" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + p + ' 100" transform="rotate(-90 18 18)"/>' : '') + '</svg>';
+  }
+  function setGauge(total, pct, sub) {
+    $('#gaugeArc').setAttribute('stroke-dasharray', (Math.max(0, Math.min(100, pct)) / 100 * ARC) + ' ' + ARC);
+    $('#gaugeNum').textContent = fmt(total);
+    $('#gaugeSub').textContent = sub;
+  }
+  function summarize(d) {
+    var qi = idxOfQty(d.headers), total = 0, filled = 0;
+    d.rows.forEach(function (r) {
+      var n = Number(r.values[qi]) || 0;
+      if (qi > -1) { total += n; if (n > 0) filled++; }
+    });
+    return { rows: d.rows.length, total: total, filled: filled, hasQty: qi > -1 };
+  }
+
+  /* ---------- Tema ---------- */
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    $('#themeBtn').setAttribute('aria-checked', t === 'dark');
+    $('#themeTop').textContent = t === 'dark' ? '☀' : '◐';
+  }
+  function initTheme() {
+    var t = null;
+    try { t = localStorage.getItem(KEY_THEME); } catch (e) {}
+    if (t !== 'dark' && t !== 'light') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    applyTheme(t);
+  }
+  function toggleTheme() {
+    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(t);
+    try { localStorage.setItem(KEY_THEME, t); } catch (e) {}
+  }
+
+  /* ---------- Mode contoh (disimpan di browser) ---------- */
+  function demoLoad(id) {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY_DEMO + id) || 'null');
+      if (s && s.headers && s.rows) return s;
+    } catch (e) {}
+    return { headers: ['NO', 'DASARAN WARNA', 'JUMLAH'],
+      rows: SAMPLE.map(function (w, i) { return { row: i + 1, values: [i + 1, w, ''] }; }) };
+  }
+  function demoSave(d) { try { localStorage.setItem(KEY_DEMO + cur.id, JSON.stringify(d)); } catch (e) {} }
+  function renumber(d) {
+    d.rows.forEach(function (r, i) {
+      r.row = i + 1;
+      if (String(d.headers[0]).toUpperCase() === 'NO') r.values[0] = i + 1;
+    });
+  }
+  function demoOp(action, p) {
+    var d = demoLoad(cur.id);
+    if (action === 'add') {
+      d.rows.push({ row: 0, values: p.values });
+    } else if (action === 'update') {
+      d.rows.forEach(function (r) { if (r.row === p.row) r.values = p.values; });
+    } else if (action === 'delete') {
+      d.rows = d.rows.filter(function (r) { return r.row !== p.row; });
+    } else if (action === 'addColumn') {
+      d.headers.push(p.name);
+      d.rows.forEach(function (r) { r.values.push(''); });
+    } else if (action === 'deleteColumn') {
+      d.headers.splice(p.index, 1);
+      d.rows.forEach(function (r) { r.values.splice(p.index, 1); });
+    } else if (action === 'adjust') {
+      var qi = idxOfQty(d.headers);
+      if (qi < 0) throw new Error('Kolom JUMLAH tidak ditemukan');
+      d.rows.forEach(function (r) {
+        if (r.row !== p.row) return;
+        var now = Number(r.values[qi]) || 0, next = now + p.delta;
+        if (next < 0) throw new Error('Jumlah tidak boleh kurang dari 0 (sekarang ' + now + ')');
+        r.values[qi] = next;
+      });
+    }
+    renumber(d);
+    demoSave(d);
+    data = d;
+  }
+
+  /* ---------- Google Sheets lewat Apps Script ---------- */
+  function remoteGet(params) {
+    params.token = cfg.token || '';
+    var q = Object.keys(params).map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+    return fetch(cfg.url + (cfg.url.indexOf('?') > -1 ? '&' : '?') + q).then(function (r) { return r.json(); });
+  }
+  function remotePost(action, p) {
+    var body = Object.assign({ action: action, token: cfg.token || '', sheet: cur.id }, p);
+    return fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); });
+  }
+
+  /* ---------- Daftar data dan beranda ---------- */
+  function loadSets() {
+    if (!cfg.url) { sets = [{ id: 'dasaran', title: 'Data Dasaran' }]; return Promise.resolve(); }
+    return remoteGet({ action: 'list' }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || 'Gagal membaca daftar data');
+      sets = res.sets;
+    });
+  }
+  function start() {
+    sums = {};
+    $('#homeBox').innerHTML = '<div class="state">Memuat daftar data…</div>';
+    loadSets().then(function () { renderNav(); renderHome(); }, function (e) {
+      sets = []; renderNav();
+      $('#homeBox').innerHTML = '<div class="state">Daftar data tidak bisa dimuat. ' + esc(e.message) +
+        '<br>Periksa URL Web App dan pengaturan akses (Anyone) di Apps Script.</div>';
+    }).then(route);
+    updateStatus();
+  }
+  function loadSummaries() {
+    var jobs = sets.map(function (s) {
+      if (!cfg.url) { sums[s.id] = summarize(demoLoad(s.id)); return Promise.resolve(); }
+      return remoteGet({ action: 'read', sheet: s.id }).then(function (res) {
+        if (res.ok) sums[s.id] = summarize({ headers: res.headers, rows: res.rows });
+      }).catch(function () {});
+    });
+    return Promise.all(jobs).then(function () { if (!cur) { renderHome(); updateHomeGauge(); } });
+  }
+  function totals() {
+    var t = { rows: 0, total: 0, filled: 0, n: 0 };
+    sets.forEach(function (s) {
+      var x = sums[s.id]; if (!x) return;
+      t.n++; t.rows += x.rows; t.total += x.total; t.filled += x.filled;
+    });
+    return t;
+  }
+  function updateHomeGauge() {
+    var t = totals();
+    setGauge(t.total, t.rows ? t.filled / t.rows * 100 : 0, t.rows ? t.filled + ' dari ' + t.rows + ' baris terisi' : ' ');
+  }
+  function renderHome() {
+    if (!sets.length) { $('#homeBox').innerHTML = '<div class="state">Belum ada data di CONFIG.SHEETS.</div>'; return; }
+    var t = totals();
+    var html = '<div class="homegrid"><div class="hero"><span>Total semua data</span><b>' + fmt(t.total) + '</b><small>' +
+      sets.length + ' data · ' + (t.n ? fmt(t.rows) + ' baris · ' + fmt(t.filled) + ' sudah terisi' : 'menghitung…') + '</small></div>' +
+      '<div class="setgrid">';
+    sets.forEach(function (s, i) {
+      var x = sums[s.id], acc = i % 3, pct = x && x.rows ? Math.round(x.filled / x.rows * 100) : 0;
+      html += '<a class="setcard acc' + acc + '" href="#' + esc(s.id) + '">' +
+        '<div class="sc-top"><span class="sc-ic">' + ICO_GRID + '</span><div><b>' + esc(s.title) + '</b><small>' + (x ? fmt(x.rows) + ' baris' : 'memuat…') + '</small></div></div>' +
+        '<div class="sc-mid"><div class="donutwrap">' + donut(pct, GRADS[acc]) + '<em>' + (x ? pct + '%' : '') + '</em></div>' +
+        '<div class="sc-num"><span>Total jumlah</span><b>' + (x ? fmt(x.total) : '–') + '</b></div></div>' +
+        '<div class="sc-foot">' + (x ? '<span class="tag">' + fmt(x.filled) + ' terisi</span><span class="tag">' + fmt(x.rows - x.filled) + ' kosong</span>' : '') +
+        '<span class="open">Buka →</span></div></a>';
+    });
+    $('#homeBox').innerHTML = html + '</div></div>';
+  }
+  function renderNav() {
+    var id = cur ? cur.id : null;
+    var html = '<a href="#"' + (!cur ? ' aria-current="page"' : '') + '>' + ICO_HOME + 'Semua data</a>';
+    sets.forEach(function (s) {
+      html += '<a href="#' + esc(s.id) + '"' + (id === s.id ? ' aria-current="page"' : '') + '>' + ICO_GRID + esc(s.title) + '</a>';
+    });
+    $('#nav').innerHTML = html;
+  }
+  function updateStatus() {
+    var live = !!cfg.url;
+    document.querySelectorAll('.stx').forEach(function (el) { el.textContent = live ? 'Terhubung ke Google Sheets' : 'Mode contoh'; });
+    document.querySelectorAll('.conn, .pill').forEach(function (el) { el.classList.toggle('live', live); });
+    $('.ctx').textContent = live ? 'Perubahan langsung tersimpan di Google Sheets.' : 'Data contoh hanya tersimpan di browser ini.';
+  }
+
+  /* ---------- Pindah halaman lewat hash ---------- */
+  function route() {
+    var id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    var s = sets.filter(function (x) { return x.id === id; })[0];
+    if (s) openSet(s); else showHome();
+    renderNav();
+  }
+  function showHome() {
+    cur = null;
+    $('#homeView').hidden = false; $('#setView').hidden = true; $('#back').hidden = true;
+    $('#pageTitle').textContent = 'Pilih Data';
+    $('#pageSub').textContent = 'Klik salah satu data untuk membukanya.';
+    document.title = 'Pilih Data';
+    if (sets.length) { renderHome(); updateHomeGauge(); loadSummaries(); }
+  }
+  function openSet(s) {
+    cur = s; query = ''; $('#q').value = '';
+    $('#homeView').hidden = true; $('#setView').hidden = false; $('#back').hidden = false;
+    $('#pageTitle').textContent = s.title;
+    document.title = s.title;
+    setMode('quick');
+    load();
+  }
+  function setMode(m) {
+    mode = m;
+    $('#tabQuick').setAttribute('aria-pressed', m === 'quick');
+    $('#tabManage').setAttribute('aria-pressed', m === 'manage');
+    $('#addRow').hidden = $('#addCol').hidden = m === 'quick';
+    $('#quickBox').hidden = m !== 'quick';
+    $('#tableBox').hidden = m !== 'manage';
+    $('#pageSub').textContent = m === 'quick'
+      ? 'Cari dasaran, isi angkanya, lalu tekan Tambah atau Kurangi.'
+      : 'Tambah, ubah, atau hapus baris dan kolom.';
+    render();
+  }
+
+  /* ---------- Muat dan simpan data ---------- */
+  function load() {
+    setBusy(true);
+    if (!cfg.url) { data = demoLoad(cur.id); setBusy(false); render(); return Promise.resolve(); }
+    $('#quickBox').innerHTML = $('#tableBox').innerHTML = '<div class="state">Mengambil data dari Google Sheets…</div>';
+    $('#stats').innerHTML = '';
+    return remoteGet({ action: 'read', sheet: cur.id }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || 'Gagal membaca data');
+      data = { headers: res.headers, rows: res.rows };
+      render();
+    }).catch(function (e) {
+      var msg = '<div class="state">Data tidak bisa dimuat. ' + esc(e.message) + '</div>';
+      $('#quickBox').innerHTML = $('#tableBox').innerHTML = msg;
+      toast('Gagal memuat data', true);
+    }).then(function () { setBusy(false); });
+  }
+
+  function perform(action, payload) {
+    if (!cfg.url) {
+      try { demoOp(action, payload); } catch (e) { return Promise.reject(e); }
+      render(); return Promise.resolve();
+    }
+    setBusy(true);
+    return remotePost(action, payload).then(function (res) {
+      if (!res.ok) throw new Error(res.error || 'Gagal menyimpan');
+      data = { headers: res.headers, rows: res.rows };
+      render();
+    }).then(function () { setBusy(false); }, function (e) { setBusy(false); throw e; });
+  }
+
+  function setBusy(b) {
+    busy = b;
+    ['#addRow', '#addCol', '#reload'].forEach(function (s) { $(s).disabled = b; });
+    document.querySelectorAll('td.act button, th .x, .qitem button, .qitem input').forEach(function (el) { el.disabled = b; });
+  }
+
+  /* ---------- Tampilan halaman data ---------- */
+  function chips(text) {
+    var words = String(text).toUpperCase().split(/[^A-Z]+/).filter(function (w) { return COLORS[w]; });
+    if (!words.length) return '';
+    return '<span class="chips">' + words.map(function (w) {
+      return '<span style="background:' + COLORS[w] + '" title="' + w + '"></span>';
+    }).join('') + '</span>';
+  }
+  function matches(r) {
+    if (!query) return true;
+    var q = query.toLowerCase();
+    return r.values.some(function (v) { return String(v).toLowerCase().indexOf(q) > -1; });
+  }
+
+  function render() {
+    if (!cur) return;
+    var h = data.headers;
+    if (!h.length) {
+      $('#quickBox').innerHTML = $('#tableBox').innerHTML = '<div class="state">Sheet belum punya judul kolom.</div>';
+      $('#stats').innerHTML = '';
+      return;
+    }
+    var rows = data.rows.filter(matches);
+    if (mode === 'quick') renderQuick(rows); else renderTable(rows);
+    renderStats();
+
+    $('#count').textContent = rows.length === data.rows.length
+      ? data.rows.length + ' baris'
+      : rows.length + ' dari ' + data.rows.length + ' baris';
+    var s = summarize(data);
+    $('#total').textContent = s.hasQty ? 'Total JUMLAH: ' + fmt(s.total) : '';
+    setGauge(s.total, s.rows ? s.filled / s.rows * 100 : 0, s.rows ? s.filled + ' dari ' + s.rows + ' baris terisi' : ' ');
+    sums[cur.id] = s;
+    updateStatus();
+    if (busy) setBusy(true);
+  }
+
+  function renderStats() {
+    var qi = qtyIdx(), ni = nameIdx();
+    if (qi < 0) { $('#stats').innerHTML = ''; return; }
+    var s = summarize(data), pct = s.rows ? Math.round(s.filled / s.rows * 100) : 0;
+    var top = data.rows.map(function (r) { return { n: r.values[ni], v: Number(r.values[qi]) || 0 }; })
+      .filter(function (x) { return x.v > 0; })
+      .sort(function (a, b) { return b.v - a.v; }).slice(0, 5);
+    var max = top.length ? top[0].v : 0;
+
+    var html = '<div class="hero sm"><span>Total jumlah</span><b>' + fmt(s.total) + '</b><small>' + fmt(s.rows) + ' dasaran · ' + fmt(s.filled) + ' sudah terisi</small></div>';
+
+    html += '<div class="card panel"><h3>Sudah terisi</h3><div class="dn"><div class="donutwrap">' + donut(pct, 'gViolet') + '<em>' + pct + '%</em></div>' +
+      '<div class="legend"><span><i style="background:#4a2bd6"></i>Terisi <b>' + fmt(s.filled) + '</b></span>' +
+      '<span><i style="background:var(--track);border:1px solid var(--line)"></i>Kosong <b>' + fmt(s.rows - s.filled) + '</b></span></div></div></div>';
+
+    html += '<div class="card panel"><h3>Jumlah terbanyak</h3>';
+    if (!top.length) {
+      html += '<p class="note">Belum ada jumlah yang terisi. Isi angka lewat daftar, nanti urutannya muncul di sini.</p>';
+    } else {
+      top.forEach(function (x, i) {
+        html += '<div class="brow"><div class="bl"><span>' + (isColorCol(data.headers[ni]) ? chips(x.n) : '') + esc(x.n) + '</span><span>' + fmt(x.v) + '</span></div>' +
+          '<div class="bt"><i class="c' + (i % 3) + '" style="width:' + Math.max(4, Math.round(x.v / max * 100)) + '%"></i></div></div>';
+      });
+    }
+    $('#stats').innerHTML = html + '</div>';
+  }
+
+  function renderQuick(rows) {
+    var qi = qtyIdx(), ni = nameIdx();
+    if (qi < 0) {
+      $('#quickBox').innerHTML = '<div class="state">Kolom JUMLAH tidak ada di tabel ini. Buka "Kelola tabel" lalu tambahkan kolom bernama JUMLAH.</div>';
+      return;
+    }
+    if (!rows.length) {
+      $('#quickBox').innerHTML = '<div class="state">' + (query ? 'Tidak ada dasaran yang cocok dengan pencarian.' : 'Belum ada data.') + '</div>';
+      return;
+    }
+    $('#quickBox').innerHTML = rows.map(function (r) {
+      var n = Number(r.values[qi]) || 0;
+      return '<div class="qitem" data-row="' + r.row + '">' +
+        '<div class="qname">' + (isColorCol(data.headers[ni]) ? chips(r.values[ni]) : '') + esc(r.values[ni]) + '</div>' +
+        '<div class="qval"><span>Jumlah</span><b class="' + (n === 0 ? 'zero' : '') + '">' + fmt(n) + '</b></div>' +
+        '<div class="qctl">' +
+          '<input type="number" min="0" step="any" value="1" inputmode="decimal" aria-label="Banyaknya perubahan untuk ' + esc(r.values[ni]) + '">' +
+          '<button type="button" data-sign="-1">− Kurangi</button>' +
+          '<button type="button" class="primary" data-sign="1">+ Tambah</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  function renderTable(rows) {
+    var h = data.headers;
+    var html = '<table><thead><tr>';
+    h.forEach(function (name, i) {
+      html += '<th class="' + (isNumCol(name) ? 'num' : '') + '"><div class="th" style="' + (isNumCol(name) ? 'justify-content:flex-end' : '') + '">' +
+        esc(name) + (i > 0 ? '<button type="button" class="x" data-del-col="' + i + '" title="Hapus kolom ' + esc(name) + '" aria-label="Hapus kolom ' + esc(name) + '">×</button>' : '') +
+        '</div></th>';
+    });
+    html += '<th></th></tr></thead><tbody>';
+    if (!rows.length) {
+      html += '<tr><td colspan="' + (h.length + 1) + '" class="state">' + (query ? 'Tidak ada data yang cocok.' : 'Belum ada data. Klik "Tambah baris".') + '</td></tr>';
+    }
+    rows.forEach(function (r) {
+      html += '<tr>';
+      h.forEach(function (name, i) {
+        var v = r.values[i];
+        var shown = (v === '' || v == null) ? '<span class="empty">—</span>' : esc(v);
+        html += '<td class="' + (isNumCol(name) ? 'num' : '') + '">' + (isColorCol(name) ? chips(v) : '') + shown + '</td>';
+      });
+      html += '<td class="act"><button type="button" data-edit="' + r.row + '">Ubah</button><button type="button" data-del="' + r.row + '">Hapus</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    $('#tableBox').innerHTML = html;
+  }
+
+  /* ---------- Tambah / kurangi jumlah ---------- */
+  function adjust(rowNo, sign, amount) {
+    var r = findRow(rowNo), qi = qtyIdx(), ni = nameIdx();
+    if (!r) return;
+    var before = Number(r.values[qi]) || 0, name = r.values[ni];
+    if (!(amount > 0)) { toast('Isi angka lebih dari 0 dulu', true); return; }
+    if (before + sign * amount < 0) { toast(name + ': jumlah sekarang ' + before + ', tidak bisa dikurangi ' + amount, true); return; }
+    perform('adjust', { row: rowNo, delta: sign * amount }).then(function () {
+      var after = findRow(rowNo);
+      toast(name + ': ' + before + ' → ' + (after ? Number(after.values[qi]) || 0 : before + sign * amount));
+    }).catch(function (e) { toast(e.message, true); });
+  }
+
+  /* ---------- Dialog baris ---------- */
+  function openRow(row) {
+    editing = row || null;
+    $('#rowTitle').textContent = row ? 'Ubah baris' : 'Tambah baris';
+    $('#rowErr').textContent = '';
+    var html = '';
+    data.headers.forEach(function (name, i) {
+      var isNo = i === 0 && String(name).toUpperCase() === 'NO';
+      var val = row ? row.values[i] : '';
+      html += '<div class="field"><label for="f' + i + '">' + esc(name) + '</label>' +
+        '<input id="f' + i + '" type="' + (isNumCol(name) && !isNo ? 'number' : 'text') + '"' +
+        (isNumCol(name) && !isNo ? ' step="any"' : '') +
+        ' value="' + esc(val) + '"' + (isNo ? ' disabled' : '') + ' autocomplete="off">' +
+        (isNo ? '<small>Nomor diisi otomatis.</small>' : '') + '</div>';
+    });
+    $('#rowFields').innerHTML = html;
+    $('#rowDlg').showModal();
+    var first = $('#rowFields input:not([disabled])');
+    if (first) first.focus();
+  }
+
+  $('#rowForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var values = data.headers.map(function (name, i) {
+      var el = document.getElementById('f' + i);
+      var v = el ? el.value.trim() : '';
+      if (isNumCol(name) && v !== '' && !isNaN(Number(v))) return Number(v);
+      return v;
+    });
+    var hasInput = values.some(function (v, i) { return !(i === 0 && String(data.headers[0]).toUpperCase() === 'NO') && v !== ''; });
+    if (!hasInput) { $('#rowErr').textContent = 'Isi minimal satu kolom.'; return; }
+    var action = editing ? 'update' : 'add';
+    var payload = editing ? { row: editing.row, values: values } : { values: values };
+    $('#rowSave').disabled = true;
+    perform(action, payload).then(function () {
+      $('#rowDlg').close();
+      toast(editing ? 'Baris diperbarui' : 'Baris ditambahkan');
+    }).catch(function (e) { $('#rowErr').textContent = e.message; })
+      .then(function () { $('#rowSave').disabled = false; });
+  });
+
+  /* ---------- Dialog kolom ---------- */
+  $('#addCol').addEventListener('click', function () {
+    $('#colName').value = ''; $('#colErr').textContent = ''; $('#colDlg').showModal(); $('#colName').focus();
+  });
+  $('#colForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var name = $('#colName').value.trim();
+    if (!name) { $('#colErr').textContent = 'Nama kolom wajib diisi.'; return; }
+    var dup = data.headers.some(function (h) { return String(h).toUpperCase() === name.toUpperCase(); });
+    if (dup) { $('#colErr').textContent = 'Nama kolom sudah dipakai.'; return; }
+    $('#colSave').disabled = true;
+    perform('addColumn', { name: name }).then(function () {
+      $('#colDlg').close(); toast('Kolom "' + name + '" ditambahkan');
+    }).catch(function (e) { $('#colErr').textContent = e.message; })
+      .then(function () { $('#colSave').disabled = false; });
+  });
+
+  /* ---------- Dialog hapus ---------- */
+  function askDelete(kind, ref) {
+    pendingDel = { kind: kind, ref: ref };
+    if (kind === 'row') {
+      var r = findRow(ref);
+      $('#delTitle').textContent = 'Hapus baris?';
+      $('#delText').textContent = 'Baris "' + (r ? r.values[nameIdx()] : '') + '" akan dihapus dari tabel.';
+    } else {
+      $('#delTitle').textContent = 'Hapus kolom?';
+      $('#delText').textContent = 'Kolom "' + data.headers[ref] + '" beserta seluruh isinya akan dihapus.';
+    }
+    $('#delDlg').showModal();
+  }
+  $('#delOk').addEventListener('click', function () {
+    if (!pendingDel) return;
+    var d = pendingDel, p = d.kind === 'row' ? { row: d.ref } : { index: d.ref };
+    $('#delOk').disabled = true;
+    perform(d.kind === 'row' ? 'delete' : 'deleteColumn', p).then(function () {
+      $('#delDlg').close(); toast(d.kind === 'row' ? 'Baris dihapus' : 'Kolom dihapus');
+    }).catch(function (e) { toast(e.message, true); })
+      .then(function () { $('#delOk').disabled = false; });
+  });
+
+  /* ---------- Pengaturan koneksi ---------- */
+  $('#cfgForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    cfg.url = $('#cfgUrl').value.trim(); cfg.token = $('#cfgToken').value.trim();
+    saveCfg(); $('#cfgDlg').close();
+    if (location.hash) location.hash = '';
+    start();
+  });
+
+  /* ---------- Event umum ---------- */
+  document.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (t.closest('[data-cfg]')) {
+      $('#cfgUrl').value = cfg.url; $('#cfgToken').value = cfg.token; $('#cfgDlg').showModal(); return;
+    }
+    if (t.matches('[data-close]')) { t.closest('dialog').close(); return; }
+    if (t.dataset.sign) {
+      var box = t.closest('.qitem');
+      adjust(Number(box.dataset.row), Number(t.dataset.sign), Number(box.querySelector('input').value));
+    } else if (t.dataset.edit) {
+      var r = findRow(Number(t.dataset.edit));
+      if (r) openRow(r);
+    } else if (t.dataset.del) { askDelete('row', Number(t.dataset.del)); }
+    else if (t.dataset.delCol) { askDelete('col', Number(t.dataset.delCol)); }
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' && ev.target.matches('.qitem input')) {
+      ev.preventDefault();
+      var box = ev.target.closest('.qitem');
+      adjust(Number(box.dataset.row), 1, Number(ev.target.value));
+    }
+  });
+  $('#tabQuick').addEventListener('click', function () { setMode('quick'); });
+  $('#tabManage').addEventListener('click', function () { setMode('manage'); });
+  $('#addRow').addEventListener('click', function () { openRow(null); });
+  $('#reload').addEventListener('click', load);
+  $('#themeBtn').addEventListener('click', toggleTheme);
+  $('#themeTop').addEventListener('click', toggleTheme);
+  $('#q').addEventListener('input', function (e) { query = e.target.value.trim(); render(); });
+  window.addEventListener('hashchange', route);
+
+  initTheme();
+  start();
+})();
+</script>
+</body>
+</html>
